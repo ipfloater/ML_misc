@@ -30,8 +30,8 @@ cross_val_predict = timethis(cross_val_predict)
 
 class classifier():
     def __init__(self, model_data, excl_model_cols=[], bench_scores=[],
-                 numeric_types=(int, np.int16, np.int32,np.int64,
-                                float, np.float16,np.float32,np.float64,
+                 numeric_types=(int, np.int16, np.int32, np.int64,
+                                float, np.float16, np.float32, np.float64,
                                 np.double)):
         ''' note X_train_w_cols contain some socre columns for benchmarking purpose
             they should not be part of model building
@@ -53,9 +53,9 @@ class classifier():
            step 3: predict_proba() is called to produce probability for test dataset
         '''
         p_lin, p_nlin = self.build_pipeline(self.X_all, self.excl_model_cols)
-        ##import pdb; pdb.set_trace()
-        clfs, stacking_clf = self.build_classifier_estimators(p_lin, p_nlin, **kwargs)
-        
+        # import pdb; pdb.set_trace()
+        clfs, stacking_clf = self.build_classifier_estimators(p_lin, p_nlin)
+
         if not include_stacking:
             estimators = clfs
         else:
@@ -70,26 +70,26 @@ class classifier():
 
         X_test = X_test_w_cols.drop(columns=self.excl_model_cols)
         y_test, wt_test = self.y_test, self.wt_test
-        
-        ##print(f'pre-loop wt_train {wt_train.shape} {np.mean(wt_train):.3f}  wt_test {wt_test.shape} {np.mean(wt_test):.3f}')
+
+        # print(f'pre-loop wt_train {wt_train.shape} {np.mean(wt_train):.3f}  wt_test {wt_test.shape} {np.mean(wt_test):.3f}')
 
         for (name, est) in estimators:
             if name != 'StackingClassifier':
                 nm = str(est[1]).split('(')[0].lower()
                 print('=========================================')
                 print(name, nm)
-                ## AdaBoostClassifier.fit() will normalize sample_weight
+                # AdaBoostClassifier.fit() will normalize sample_weight
                 wt_train_copy = copy.copy(wt_train)
                 if perform_cv:
-                    ## pass "sample_weight=" keyword through pipeline
-                    pred_cv = cross_val_predict(est, X_train, y_train, fit_params={f'{nm}__sample_weight':wt_train_copy}, method='predict_proba')
+                    # pass "sample_weight=" keyword through pipeline
+                    pred_cv = cross_val_predict(est, X_train, y_train, fit_params={f'{nm}__sample_weight': wt_train_copy}, method='predict_proba')
                 start = time.time()
-                est.fit(X_train, y_train, **{f'{nm}__sample_weight':wt_train_copy})
+                est.fit(X_train, y_train, **{f'{nm}__sample_weight': wt_train_copy})
                 end = time.time()
                 print(f'{name} fit timing: {end-start:.4f}')
             else:
-                ## can't pass sample_weights to piped estimators
-                ## run equal-weighted instead
+                # can't pass sample_weights to piped estimators
+                # run equal-weighted instead
                 print(name)
                 if perform_cv:
                     pred_cv = cross_val_predict(est, X_train, y_train, method='predict_proba')
@@ -97,7 +97,7 @@ class classifier():
                 est.fit(X_train, y_train)
                 end = time.time()
                 print(f'{name} fit timing: {end-start:.4f}')
-  
+
             if 'steps' in dir(est) and 'feature_importances_' in dir(est.steps[1][1]):
                 importances = est.steps[1][1].feature_importances_
             elif name == 'Bagging':
@@ -105,27 +105,26 @@ class classifier():
             else:
                 print(f'{name} does not have feature importances')
                 importances = []
-  
+
             if len(importances) > 0:
-                features0 = pd.DataFrame({'model':name, 'variable':X_train.columns, 
-                                          'importance':importances}).sort_values('importance', ascending=False)
+                features0 = pd.DataFrame({'model': name, 'variable': X_train.columns,
+                                          'importance': importances}).sort_values('importance', ascending=False)
                 features0['rank'] = 1
                 features0['rank'] = features0['rank'].cumsum()
                 print(features0.head(5))
                 features = pd.concat([features, features0], axis=0)
 
-                            
-            ## this is slow for BaggingClassifier
+            # this is slow for BaggingClassifier
             pred0 = est.predict_proba(X_test)
-            res_test = pd.DataFrame({'model':name, 'type':'test', 'actual':self.y_test, 'pred':pred0[:,1], 'wt':wt_test})
+            res_test = pd.DataFrame({'model': name, 'type': 'test', 'actual': self.y_test, 'pred': pred0[:, 1], 'wt': wt_test})
 
             if perform_cv:
-                res_cv = pd.DataFrame({'model':name, 'type':'cv', 'actual':self.y_train, 'pred':pred_cv[:,1], 'wt':wt_train})
+                res_cv = pd.DataFrame({'model': name, 'type': 'cv', 'actual': self.y_train, 'pred': pred_cv[:, 1], 'wt': wt_train})
                 res = pd.concat([res, res_cv, res_test], axis=0)
                 print(f'pred_cv {pred_cv.shape}', end=' ')
             else:
                 res = pd.concat([res, res_test], axis=0)
-            
+
             print(f'wt_train {wt_train.shape} {np.mean(wt_train):.3f} pred0 {pred0.shape} wt_test {wt_test.shape} {np.mean(wt_test):.3f}')
 
         for scr in self.bench_scores:
@@ -135,23 +134,23 @@ class classifier():
             a['model'] = scr
             a['type'] = 'cv'
 
-            res = pd.concat([res, a[['model','type','actual','pred','wt']]], axis=0)
+            res = pd.concat([res, a[['model', 'type', 'actual', 'pred', 'wt']]], axis=0)
 
             y_pred = 1 - X_test_w_cols[scr].fillna(0)/X_test_w_cols[scr].fillna(0).max()
-  
+
             a = pd.concat([y_test, y_pred, wt_test], axis=1)
             a.columns = ['actual', 'pred', 'wt']
             a['model'] = scr
             a['type'] = 'test'
-  
-            res = pd.concat([res, a[['model','type','actual','pred','wt']]], axis=0)
-            ##print(res)
-            
+
+            res = pd.concat([res, a[['model', 'type', 'actual', 'pred', 'wt']]], axis=0)
+            # print(res)
+
         self.features = features
         self.res = res
         self.estimators = estimators
-        
-        return res        
+
+        return res
 
     def gen_perf_stats(self, **kwargs):
         stats = []
@@ -159,23 +158,25 @@ class classifier():
 
         res = self.res
         verb = kwargs['verb'] if 'verb' in kwargs.keys() else False
-        
+
         for mdl in res['model'].unique():
             for type in ['cv', 'test']:
                 gg = res.query(f'model=="{mdl}" and type=="{type}"')
-                if gg.shape[0] == 0: continue
+                if gg.shape[0] == 0:
+                    continue
                 print(mdl, type)
-                auc0, ks0, capt5, capt10, capt20, count, wtCount, popCap, rocCurve, binCap = gen_cap_curve(gg['actual'], gg['pred'], gg['wt'], mdl, type, '', verb)
+                auc0, ks0, capt5, capt10, capt20, count, wtCount, popCap, rocCurve, binCap = gen_cap_curve(
+                    gg['actual'], gg['pred'], gg['wt'], mdl, type, '', verb)
                 pf = (mdl, type, ks0, 2*auc0-1, auc0, capt5, capt10, capt20, count, wtCount)
                 stats += [pf]
                 popCaps = pd.concat([popCaps, popCap], axis=0)
                 binCaps = pd.concat([binCaps, binCap], axis=0)
-    
-        stats = pd.DataFrame(stats, columns=['model','type','ks','gini','auc','cap5%','cap10%','cap20%', 'count','wtCount'])
+
+        stats = pd.DataFrame(stats, columns=['model', 'type', 'ks', 'gini', 'auc', 'cap5%', 'cap10%', 'cap20%', 'count', 'wtCount'])
         stats = stats.sort_values('type')
 
         return stats, popCaps, binCaps
-    
+
     @staticmethod
     def build_pipeline(XX_all, excl_model_cols=[]):
         ''' XX_all should contain all possible values for categoricals,
@@ -187,7 +188,7 @@ class classifier():
             cat_cols = XX.columns[XX.dtypes == 'O']
             num_cols = XX.columns[XX.dtypes != 'O']
 
-            ## OneHotEncoder applied to linear estimator only!
+            # OneHotEncoder applied to linear estimator only!
             categories = [[v if v is not None else missing_cat for v in XX[column].unique()] for column in XX[cat_cols]]
             return num_cols, cat_cols, categories
 
@@ -198,22 +199,22 @@ class classifier():
 
         missing_cat = 'missing'
 
-        ## make sure to use entire sample to build categories for categorical variables!
+        # make sure to use entire sample to build categories for categorical variables!
         num_cols, cat_cols, categories = extract_col_types(XX_all.drop(columns=excl_model_cols), missing_cat)
 
-        ## numeric
+        # numeric
         num_proc_lin = make_pipeline(
             SimpleImputer(strategy='constant', fill_value=0),
-            ## needed for linear models with regularization
+            # needed for linear models with regularization
             StandardScaler()
         )
 
         num_proc_nlin = make_pipeline(SimpleImputer(strategy='constant', fill_value=0))
 
-        ## categorical
+        # categorical
         cat_proc_nlin = make_pipeline(
             SimpleImputer(missing_values=None, strategy='constant', fill_value=missing_cat),
-            ## do not use OneHOtEncoder for nonlinear estimator
+            # do not use OneHOtEncoder for nonlinear estimator
             OrdinalEncoder(categories=categories)
         )
 
@@ -221,13 +222,13 @@ class classifier():
             SimpleImputer(missing_values=None, strategy='constant', fill_value=missing_cat),
             OneHotEncoder(categories=categories)
         )
-    
+
         # transformation to use for non-linear estimators
         processor_nlin = make_column_transformer(
             (cat_proc_nlin, cat_cols),
             (num_proc_nlin, num_cols),
             remainder='passthrough')
-    
+
         # transformation to use for linear estimators
         processor_lin = make_column_transformer(
             (cat_proc_lin, cat_cols),
@@ -240,12 +241,12 @@ class classifier():
     def build_classifier_estimators(processor_lin, processor_nlin, list_of_estimators=[]):
         linear_est = [
             ('Logi', LogisticRegression(max_iter=10000)),
-            ## Ridge doesn't have predict_proba
-            ##('ridge', RidgeClassifier(class_weight='balanced')),
+            # Ridge doesn't have predict_proba
+            # ('ridge', RidgeClassifier(class_weight='balanced')),
         ]
-               
+
         nonlinear_est = [
-            ##('LGBM_bal', LGBMClassifier(class_weight='balanced')),
+            # ('LGBM_bal', LGBMClassifier(class_weight='balanced')),
             ('LGBM', LGBMClassifier()),
             ('RandomForest', RandomForestClassifier(random_state=42)),
             ## much faster than GradientBoostingClassifier for large dataset
