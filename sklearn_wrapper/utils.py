@@ -192,11 +192,8 @@ def run_classifier_test(N=1000, p=10, p2=3, perform_cv=True, **kwargs):
     clf, stats0, popCaps0, binCaps0 = run_classifier_test_XY(XX, yy, wt, perform_cv, **kwargs)
 
     if 'plot' in kwargs.keys() and kwargs['plot'] == True:
-        from plotnine import qplot, geom_line, geom_point, facet_wrap, aes
-        import pdb
-        pdb.set_trace()
+        from plotnine import qplot, geom_line, geom_point, facet_wrap, aes, labs
         obj = qplot('x', 'y', data=popCaps0) + geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Population Capture')
-
         # binCaps0['bin'] = binCaps0['bin'].astype('str')
 
         obj2 = qplot('bin', 'bad_rate%', data=binCaps0[['bin', 'bad_rate%', 'Model', 'Type']]) + \
