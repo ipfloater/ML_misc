@@ -248,7 +248,7 @@ def run_classifier_test_XY(XX, yy, wt,
 
     return clf, stats0, popCaps0, binCaps0
 
-def plot_performance_curves(popCaps0, binCaps0)
+def plot_performance_curves(popCaps0, binCaps0):
     # if 'plot' in kwargs.keys() and kwargs['plot'] == True:
     from plotnine import qplot, geom_line, geom_point, facet_wrap, aes, labs
     obj = qplot('x', 'y', data=popCaps0) + geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Population Capture')
