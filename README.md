@@ -1,4 +1,5 @@
 # Machine Learning Classifier Wrapper
+## Features
 * Based on Scikit-Learn
 * Binary Classification Only
 * Support the following:
@@ -14,3 +15,7 @@
   * Report similar to Traditional Risk Scorecard
   * Bad rate by (10) bins
   * Cumulative Bad rate by (10) bins
+
+## Test
+* run `test_wrapper.py` in linux terminal, or
+* run `test_wrapper.ipynb` in Google Colab
