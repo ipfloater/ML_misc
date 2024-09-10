@@ -257,9 +257,6 @@ def plot_performance_curves(popCaps0, binCaps0):
     obj2 = qplot('bin', 'bad_rate%', data=binCaps0[['bin', 'bad_rate%', 'Model', 'Type']]) + \
         geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Bin Bad Rate')
     
-    print(obj)
-    print(obj2)
-
     from collections import namedtuple
 
     PerfCurves = namedtuple('PerfCurves', 'popCapCurves, badCapCurves')
