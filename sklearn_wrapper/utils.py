@@ -191,16 +191,6 @@ def run_classifier_test(N=1000, p=10, p2=3, perform_cv=True, **kwargs):
 
     clf, stats0, popCaps0, binCaps0 = run_classifier_test_XY(XX, yy, wt, perform_cv, **kwargs)
 
-    if 'plot' in kwargs.keys() and kwargs['plot'] == True:
-        from plotnine import qplot, geom_line, geom_point, facet_wrap, aes, labs
-        obj = qplot('x', 'y', data=popCaps0) + geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Population Capture')
-        # binCaps0['bin'] = binCaps0['bin'].astype('str')
-
-        obj2 = qplot('bin', 'bad_rate%', data=binCaps0[['bin', 'bad_rate%', 'Model', 'Type']]) + \
-            geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Bin Bad Rate')
-        print(obj)
-        print(obj2)
-
     # print('\n\n\n')
     # print('************************ Variable Clustering Algorithm ************************')
     # print('\n\n\n')
@@ -217,7 +207,7 @@ def run_classifier_test(N=1000, p=10, p2=3, perform_cv=True, **kwargs):
 
     # run_classifier_test_XY(XX_copy, yy, wt, perform_cv, **kwargs)
 
-    return XX, yy
+    return XX, yy, clf, stats0, popCaps0, binCaps0
 
 def run_classifier_test_XY(XX, yy, wt,
                            perform_cv=True,
@@ -257,3 +247,20 @@ def run_classifier_test_XY(XX, yy, wt,
     print(binCaps0.pivot_table(index=['Type', 'bin'], columns=['Model'], values=['bad_rate%']))
 
     return clf, stats0, popCaps0, binCaps0
+
+def plot_performance_curves(popCaps0, binCaps0)
+    # if 'plot' in kwargs.keys() and kwargs['plot'] == True:
+    from plotnine import qplot, geom_line, geom_point, facet_wrap, aes, labs
+    obj = qplot('x', 'y', data=popCaps0) + geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Population Capture')
+    # binCaps0['bin'] = binCaps0['bin'].astype('str')
+
+    obj2 = qplot('bin', 'bad_rate%', data=binCaps0[['bin', 'bad_rate%', 'Model', 'Type']]) + \
+        geom_line() + aes(color='factor(Model)') + facet_wrap('Type') + labs(title='Bin Bad Rate')
+    
+    print(obj)
+    print(obj2)
+
+    from collections import namedtuple
+
+    PerfCurves = namedtuple('PerfCurves', 'popCapCurves, badCapCurves')
+    return PerfCurves(popCapCurves=obj, badCapCurves=obj2)
