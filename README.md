@@ -19,4 +19,4 @@
 ## Test
 * The library has been tested under Ubuntu 22.04, as well as in Google Colab
 * run `test_wrapper.ipynb` in Google Colab (recommended!)
-* run `test_wrapper.py` in linux terminal, or
+* run `test_wrapper.py` in linux terminal
