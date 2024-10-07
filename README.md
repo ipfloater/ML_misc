@@ -4,7 +4,7 @@
 * `XX`: `pandas` dataframe
 * `yy`: `pandas` Series with binary values `0` and `1`
 
-## Data Pre-processing Features
+## Data Pre-processing & Basic Feature Engineerings
 * Columns types are auto-detected
 * **Missing Value Imputations & Transformations**
   * Using `sklearn.impute.SimpleImputer` 
@@ -18,6 +18,9 @@
   * Apply the following Scikit-Learn pipelines:
     * `sklearn.pipeline.make_pipeline`
     * `sklearn.compose.make_column_transformer`
+
+## Advanced Feature Engineering (Not Supported!)
+* Because this requires domain knowledge and is data source dependent
 
 ## Model Features
 * Based on Scikit-Learn
