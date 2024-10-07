@@ -1,5 +1,25 @@
 # Machine Learning Classifier Wrapper
-## Features
+
+## Input Data:
+* `XX`: `pandas` dataframe
+* `yy`: `pandas` Series with binary values `0` and `1`
+
+## Data Pre-processing Features
+* Columns types are auto-detected
+* **Missing Value Imputations & Transformations**
+  * Using `sklearn.impute.SimpleImputer` 
+  * For numeric columns:
+    *  Missing values imputed to `0` 
+    *  Normalized to accomodate linear model with regularization
+  * For categorical columns:
+    * Missing values are imputed as a special category/level = `missing`
+    * Use `OrdinalEncoder` to transform into numerical values
+* **Pipeline processing** 
+  * Apply the following Scikit-Learn pipelines:
+    * `sklearn.pipeline.make_pipeline`
+    * `sklearn.compose.make_column_transformer`
+
+## Model Features
 * Based on Scikit-Learn
 * Binary Classification Only
 * Support the following estimators (aka ML algorithms):
@@ -13,6 +33,8 @@
   * for example `list_of_estimators=['Logi','LGBM','RandomForest']`
 * Support Ensemble/Stacking classifier:
   * Optional, if `include_stacking=True`
+
+## Performance Summary Features
 * Option to generate Cross-Validation performance
 * Generate Test Performance
   * Report similar to Traditional Risk Scorecard
