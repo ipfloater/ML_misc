@@ -2,15 +2,18 @@
 ## Features
 * Based on Scikit-Learn
 * Binary Classification Only
-* Support the following:
+* Support the following estimators (aka ML algorithms):
   * Logistics Regression
   * LightGBM
   * RandomForest
   * HistGradientBoosting
   * AdaBoosting
   * Bagging
+* Use `list_of_estimators` to pick & choose a subset of estimators from above:
+  * for example `list_of_estimators=['Logi','LGBM','RandomForest']`
+* Support Ensemble/Stacking classifier:
+  * Optional, if `include_stacking=True`
 * Option to generate Cross-Validation performance
-* Option to build ensemble classifier
 * Generate Test Performance
   * Report similar to Traditional Risk Scorecard
   * Bad rate by (10) bins
