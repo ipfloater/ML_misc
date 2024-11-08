@@ -10,7 +10,7 @@
   * `roc_auc` curve test
   * `precision_recall` curve test
 * Original code still in `sklearn_wrapper` folder:
-  *  see [`test_wrapper.py`](./test_wrapper.py) for original test notebook
+  *  see [`test_wrapper.ipynb`](./test_wrapper.pynb) for original test notebook
 
 ## Input Data:
 * `XX`: `pandas` dataframe
