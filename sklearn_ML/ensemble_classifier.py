@@ -57,7 +57,7 @@ class EnsembleClassifier:
            step 3: predict_proba() is called to produce probability for test dataset
         '''
         p_lin, p_nlin = PipelineBuilder.build_pipeline(self.X_all, self.excl_model_cols)
-        clfs, stacking_clf = self.build_classifier_estimators(p_lin, p_nlin)
+        clfs, stacking_clf = self.build_classifier_estimators(p_lin, p_nlin, **kwargs)
 
         if not include_stacking:
             estimators = clfs
