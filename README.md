@@ -1,5 +1,17 @@
 # Machine Learning Classifier Wrapper
 
+## Note:
+* Code refactored into `sklear_ML` folder
+  * `from sklearn_ML.ensemble_classifier import EnsembleClassifier`
+  * `from sklearn_ML.pipeline_utils import PipelineBuilder`
+* see [`test_model_performance.ipynb`](./test_model_performance.ipynb) for unit tests:
+  * pipeline test
+  * ensemble classifier test
+  * `roc_auc` curve test
+  * `precision_recall` curve test
+* Original code still in `sklearn_wrapper` folder:
+  *  see [`test_sklearn.ipynb`](./test_sklearn.ipynb) for original test notebook
+
 ## Input Data:
 * `XX`: `pandas` dataframe
 * `yy`: `pandas` Series with binary values `0` and `1`
@@ -46,5 +58,6 @@
 
 ## Test
 * The library has been tested under Ubuntu 22.04, as well as in Google Colab
-* run `test_wrapper.ipynb` in Google Colab (recommended!)
+* run `test_model_performance.ipynb` in Google Colab (recommended!)
+* run `test_sklearn.ipynb` in Google Colab (this is the older version)
 * run `test_wrapper.py` in linux terminal
