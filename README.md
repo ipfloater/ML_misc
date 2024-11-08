@@ -2,15 +2,15 @@
 
 ## Note:
 * Code refactored into `sklear_ML` folder
- * `from sklearn_ML.ensemble_classifier import EnsembleClassifier`
- * * `from sklearn_ML.pipeline_utils import PipelineBuilder`
-* See [`test_model_performance.ipynb`](./test_model_performance.ipynb)
- * added several unit test cases including:
+  * `from sklearn_ML.ensemble_classifier import EnsembleClassifier`
+  * `from sklearn_ML.pipeline_utils import PipelineBuilder`
+* see [`test_model_performance.ipynb`](./test_model_performance.ipynb) for unit tests:
   * pipeline test
   * ensemble classifier test
   * `roc_auc` curve test
   * `precision_recall` curve test
-* Original code still in `sklearn_wrapper` folder
+* Original code still in `sklearn_wrapper` folder:
+  *  see [`test_wrapper.py`](./test_wrapper.py) for original test notebook
 
 ## Input Data:
 * `XX`: `pandas` dataframe
