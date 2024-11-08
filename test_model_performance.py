@@ -3,10 +3,12 @@ import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification
 from sklearn.metrics import roc_curve, auc, precision_recall_curve
+from sklearn.inspection import PartialDependenceDisplay
 import matplotlib.pyplot as plt
 from itertools import cycle
 from plotnine import ggplot, aes, geom_line, labs, theme_bw, scale_color_manual, ggtitle
 from sklearn_ML.ensemble_classifier import EnsembleClassifier
+from sklearn_ML.pipeline_utils import PipelineBuilder
 
 class TestPipelineAndEnsemble(unittest.TestCase):
 
@@ -27,14 +29,14 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         self.model_data = (X_all, X_train_w_cols, y_train, wt_train, X_test_w_cols, y_test, wt_test)
         self.excl_model_cols = []
         self.bench_scores = []
+        # Run the ensemble classifier
+        self.ensemble = EnsembleClassifier(self.model_data, self.excl_model_cols, self.bench_scores)
+        self.result = self.ensemble.run(include_stacking=True, perform_cv=False)
 
     def test_roc_auc_and_precision_recall_curve(self):
-        # Run the ensemble classifier
-        ensemble = EnsembleClassifier(self.model_data, self.excl_model_cols, self.bench_scores)
-        result = ensemble.run(include_stacking=True, perform_cv=False)
 
         # Filter results for test set predictions
-        test_results = result[result['type'] == 'test']
+        test_results = self.result.query(f'type == "test"')
 
         # Colors for plotting
         colors = cycle(['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black'])
@@ -42,7 +44,7 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         # Plot ROC AUC curve for each model using matplotlib
         plt.figure()
         for model_name in test_results['model'].unique():
-            model_results = test_results[test_results['model'] == model_name]
+            model_results = test_results.query(f'model == "{model_name}"')
             y_test = model_results['actual']
             y_pred = model_results['pred']
             fpr, tpr, _ = roc_curve(y_test, y_pred)
@@ -60,7 +62,7 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         plt.figure()
         colors = cycle(['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black'])
         for model_name in test_results['model'].unique():
-            model_results = test_results[test_results['model'] == model_name]
+            model_results = test_results.query(f'model == "{model_name}"')
             y_test = model_results['actual']
             y_pred = model_results['pred']
             precision, recall, _ = precision_recall_curve(y_test, y_pred)
@@ -73,17 +75,13 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         plt.show()
 
     def test_roc_auc_and_precision_recall_curve_plotnine(self):
-        # Run the ensemble classifier
-        ensemble = EnsembleClassifier(self.model_data, self.excl_model_cols, self.bench_scores)
-        result = ensemble.run(include_stacking=True, perform_cv=False)
-
         # Filter results for test set predictions
-        test_results = result[result['type'] == 'test']
+        test_results = self.result.query(f'type == "test"')
 
         # Prepare data for ROC AUC curve with plotnine
         roc_data = []
         for model_name in test_results['model'].unique():
-            model_results = test_results[test_results['model'] == model_name]
+            model_results = test_results.query(f'model == "{model_name}"')
             y_test = model_results['actual']
             y_pred = model_results['pred']
             fpr, tpr, _ = roc_curve(y_test, y_pred)
@@ -107,7 +105,7 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         # Prepare data for Precision-Recall curve with plotnine
         pr_data = []
         for model_name in test_results['model'].unique():
-            model_results = test_results[test_results['model'] == model_name]
+            model_results = test_results.query(f'model == "{model_name}"')
             y_test = model_results['actual']
             y_pred = model_results['pred']
             precision, recall, _ = precision_recall_curve(y_test, y_pred)
@@ -127,6 +125,25 @@ class TestPipelineAndEnsemble(unittest.TestCase):
             scale_color_manual(values=['blue', 'green', 'red', 'cyan', 'magenta', 'yellow', 'black'])
         )
         print(pr_plot)
+
+    def test_partial_dependence_display(self, model_name='RandomForest'):
+        estimators = self.ensemble.estimators
+
+        # Use the first estimator for partial dependence display
+        if estimators:
+            for mod_name, estimator in estimators:
+                if mod_name != model_name:
+                    continue
+                # features = [0, 1]
+                # Choosing top 5 features for partial dependence
+                if not hasattr(estimator[1], 'feature_importances_'):
+                    print(f'WARNING: feature_importances_ not available for {model_name}, skipping')
+                    break
+
+                features = np.argsort(estimator[1].feature_importances_)[-5:][::-1]
+                PartialDependenceDisplay.from_estimator(estimator, self.model_data[1], features)
+                plt.title(f'Partial Dependence Display for {mod_name}')
+                plt.show()
 
 
 if __name__ == '__main__':
