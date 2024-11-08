@@ -59,5 +59,5 @@
 ## Test
 * The library has been tested under Ubuntu 22.04, as well as in Google Colab
 * run `test_model_performance.ipynb` in Google Colab (recommended!)
-* run `test_wrapper.ipynb` in Google Colab (this is the older version)
+* run `test_sklearn.ipynb` in Google Colab (this is the older version)
 * run `test_wrapper.py` in linux terminal
