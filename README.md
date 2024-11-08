@@ -1,5 +1,9 @@
 # Machine Learning Classifier Wrapper
 
+## Note:
+* Code refactored into `sklear_ML` folder
+* See [`test_model_performance.ipynb` notebook](./test_model_performance.ipynb)
+
 ## Input Data:
 * `XX`: `pandas` dataframe
 * `yy`: `pandas` Series with binary values `0` and `1`
