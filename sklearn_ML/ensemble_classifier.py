@@ -161,9 +161,11 @@ class EnsembleClassifier:
             ('Bagging', BaggingClassifier(n_estimators=10)),
         ]
 
-        print(f'INFO: building classfier based on {list_of_estimators = }'
+        all_est = {nm: est for nm, est in linear_est+nonlinear_est}
 
-        estimators=[]
+        print(f'INFO: building classfier based on {list_of_estimators = }')
+
+        estimators = []
         for name, est in linear_est:
             if len(list_of_estimators) == 0 or name in list_of_estimators:
                 estimators.append((name, make_pipeline(processor_lin, est)))
@@ -172,13 +174,13 @@ class EnsembleClassifier:
             if len(list_of_estimators) == 0 or name in list_of_estimators:
                 estimators.append((name, make_pipeline(processor_nlin, est)))
 
-        if final_estimator in list_of_estimators:
-              fin_est=list_of_estimators[final_estimator]
-              print(f'INFO: ensemble estimatr {final_estimator}')
+        if final_estimator in all_est:
+            fin_est = all_est[final_estimator]
+            print(f'INFO: ensemble estimator {final_estimator}')
         else:
-              fin_est=RandomForestClassifier(random_state=42)
-              print(f'INFO: ensemble estimatr RandomForest')
-        stacking_classifier=StackingClassifier(estimators=estimators,
+            raise ValueError(f'ERROR: {final_estimator} not in {all_est = }')
+
+        stacking_classifier = StackingClassifier(estimators=estimators,
                                                  final_estimator=fin_est,
                                                  stack_method='predict_proba')
 

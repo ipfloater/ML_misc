@@ -31,8 +31,8 @@ class TestPipelineAndEnsemble(unittest.TestCase):
         self.bench_scores = []
         # Run the ensemble classifier
         self.ensemble = EnsembleClassifier(self.model_data, self.excl_model_cols, self.bench_scores)
-        self.result = self.ensemble.run(include_stacking=True, perform_cv=False, list_of_estimators=[
-                                        'Logi', 'RandomForest', 'HistGradientBoosting', 'AdaBoosting', 'Bagging'])
+        lst_ests = ['Logi', 'RandomForest', 'HistGradientBoosting', 'AdaBoosting', 'Bagging']
+        self.result = self.ensemble.run(include_stacking=True, perform_cv=False, list_of_estimators=lst_ests)
 
     def test_roc_auc_and_precision_recall_curve(self):
 
