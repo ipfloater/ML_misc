@@ -148,7 +148,7 @@ class EnsembleClassifier:
 
         return res
 
-    def build_classifier_estimators(self, processor_lin, processor_nlin, list_of_estimators=[]):
+    def build_classifier_estimators(self, processor_lin, processor_nlin, list_of_estimators=[], final_estimator='RandomForest'):
         linear_est = [
             ('Logi', LogisticRegression(max_iter=10000)),
         ]
@@ -161,7 +161,9 @@ class EnsembleClassifier:
             ('Bagging', BaggingClassifier(n_estimators=10)),
         ]
 
-        estimators = []
+        print(f'INFO: building classfier based on {list_of_estimators = }'
+
+        estimators=[]
         for name, est in linear_est:
             if len(list_of_estimators) == 0 or name in list_of_estimators:
                 estimators.append((name, make_pipeline(processor_lin, est)))
@@ -170,8 +172,14 @@ class EnsembleClassifier:
             if len(list_of_estimators) == 0 or name in list_of_estimators:
                 estimators.append((name, make_pipeline(processor_nlin, est)))
 
-        stacking_classifier = StackingClassifier(estimators=estimators,
-                                                 final_estimator=LGBMClassifier(class_weight='balanced'),
+        if final_estimator in list_of_estimators:
+              fin_est=list_of_estimators[final_estimator]
+              print(f'INFO: ensemble estimatr {final_estimator}')
+        else:
+              fin_est=RandomForestClassifier(random_state=42)
+              print(f'INFO: ensemble estimatr RandomForest')
+        stacking_classifier=StackingClassifier(estimators=estimators,
+                                                 final_estimator=fin_est,
                                                  stack_method='predict_proba')
 
         return estimators, stacking_classifier
