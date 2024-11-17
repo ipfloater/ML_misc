@@ -6,8 +6,8 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve
 import matplotlib.pyplot as plt
 from itertools import cycle
 from plotnine import ggplot, aes, geom_line, labs, theme_bw, scale_color_manual, ggtitle
-from sklearn_ML.ensemble_classifier import EnsembleClassifier
-from sklearn_ML.pipeline_utils import PipelineBuilder
+from sklearn_ml.ensemble_classifier import EnsembleClassifier
+from sklearn_ml.pipeline_utils import PipelineBuilder
 
 class TestPipelineAndEnsemble(unittest.TestCase):
 

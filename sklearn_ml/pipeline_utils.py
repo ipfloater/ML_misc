@@ -1,35 +1,36 @@
-import copy
-import pandas as pd
-import numpy as np
-import time
-import logging
+''' Utility class based on sklearn Pipeline
+'''
 
 from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import cross_val_predict
 from sklearn.compose import make_column_transformer
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder, OrdinalEncoder
 
 class PipelineBuilder:
+    ''' pipeline builder class
+    '''
     @staticmethod
-    def build_pipeline(XX_all, excl_model_cols=[]):
-        ''' XX_all should contain all possible values for categoricals,
+    def build_pipeline(xx_all, excl_model_cols=None):
+        ''' xx_all should contain all possible values for categoricals,
             otherwise pipeline will complain in processing X_test
         '''
-        def extract_col_types(XX, missing_cat):
+        if excl_model_cols is None:
+            excl_model_cols = []
+
+        def extract_col_types(df_x, missing_cat):
             ''' missing_cat is the imputing string for categorical NA
             '''
-            cat_cols = XX.columns[XX.dtypes == 'O']
-            num_cols = XX.columns[XX.dtypes != 'O']
+            cat_cols = df_x.columns[df_x.dtypes == 'O']
+            num_cols = df_x.columns[df_x.dtypes != 'O']
 
             # OneHotEncoder applied to linear estimator only!
-            categories = [[v if v is not None else missing_cat for v in XX[column].unique()] for column in XX[cat_cols]]
+            categories = [[v if v is not None else missing_cat for v in df_x[column].unique()] for column in df_x[cat_cols]]
             return num_cols, cat_cols, categories
 
         missing_cat = 'missing'
 
         # make sure to use entire sample to build categories for categorical variables!
-        num_cols, cat_cols, categories = extract_col_types(XX_all.drop(columns=excl_model_cols), missing_cat)
+        num_cols, cat_cols, categories = extract_col_types(xx_all.drop(columns=excl_model_cols), missing_cat)
 
         # numeric
         num_proc_lin = make_pipeline(
