@@ -98,19 +98,22 @@ class EnsembleClassifier:
             if name != 'StackingClassifier':
                 est_name = str(pipe_est[1]).split('(', maxsplit=1)[0].lower()
                 wt_train_copy = copy.copy(wt_train)
+                wt_key = f'{est_name}__sample_weight'
                 if perform_cv:
                     pred_cv = cross_val_predict(pipe_est, x_train, y_train,
-                                                fit_params={f'{est_name}__sample_weight': wt_train_copy},
+                                                fit_params={wt_key: wt_train_copy},
                                                 method='predict_proba',
                                                 cv=cv_folds,
                                                 n_jobs=n_jobs)
                 start = time.time()
-                pipe_est.fit(x_train, y_train, **{f'{est_name}__sample_weight': wt_train_copy})
+                pipe_est.fit(x_train, y_train, **{wt_key: wt_train_copy})
                 end = time.time()
                 logger.info(f'{name} fit timing: {end-start:.4f}')
             else:
                 if perform_cv:
-                    pred_cv = cross_val_predict(pipe_est, x_train, y_train, method='predict_proba', cv=cv_folds, n_jobs=n_jobs)
+                    pred_cv = cross_val_predict(pipe_est, x_train, y_train,
+                                                method='predict_proba',
+                                                cv=cv_folds, n_jobs=n_jobs)
                 start = time.time()
                 pipe_est.fit(x_train, y_train)
                 end = time.time()
@@ -119,29 +122,37 @@ class EnsembleClassifier:
             if hasattr(pipe_est, 'steps') and hasattr(pipe_est.steps[1][1], 'feature_importances_'):
                 importances = pipe_est.steps[1][1].feature_importances_
             elif name == 'Bagging':
-                importances = np.mean([v.feature_importances_ for v in pipe_est[1].estimators_], axis=0)
+                importances = np.mean([v.feature_importances_
+                                       for v in pipe_est[1].estimators_], axis=0)
             else:
                 importances = []
 
             if len(importances) > 0:
-                features0 = pd.DataFrame({'model': name, 'variable': x_train.columns,
-                                          'importance': importances}).sort_values('importance', ascending=False)
+                features0 = (pd.DataFrame({'model': name,
+                                           'variable': x_train.columns,
+                                          'importance': importances})
+                             .sort_values('importance', ascending=False))
                 features0['rank'] = 1
                 features0['rank'] = features0['rank'].cumsum()
                 features = pd.concat([features, features0], axis=0)
 
             pred0 = pipe_est.predict_proba(x_test)
-            res_test = pd.DataFrame({'model': name, 'type': 'test', 'actual': self.y_test, 'pred': pred0[:, 1], 'wt': wt_test})
+            res_test = pd.DataFrame({'model': name, 'type': 'test',
+                                     'actual': self.y_test, 'pred': pred0[:, 1],
+                                     'wt': wt_test})
 
             if perform_cv:
-                res_cv = pd.DataFrame({'model': name, 'type': 'cv', 'actual': self.y_train, 'pred': pred_cv[:, 1], 'wt': wt_train})
+                res_cv = pd.DataFrame({'model': name, 'type': 'cv',
+                                       'actual': self.y_train, 'pred': pred_cv[:, 1],
+                                       'wt': wt_train})
                 res = pd.concat([res, res_cv, res_test], axis=0)
             else:
                 res = pd.concat([res, res_test], axis=0)
 
         for scr in self.bench_scores:
             if x_train_w_cols[scr].isna().all() or x_train_w_cols[scr].max() == 0:
-                logger.warning(f'Benchmark score column {scr} contains all NaNs or has a max value of 0, skipping this column.')
+                logger.warning(f'''Benchmark score column {scr} contains all NaNsr''' +
+                               '''or has a max value of 0, skipping this column.''')
                 continue
 
             y_pred = 1 - x_train_w_cols[scr].fillna(0)/x_train_w_cols[scr].fillna(0).max()
@@ -154,7 +165,8 @@ class EnsembleClassifier:
             res = pd.concat([res, df_y[cols_output]], axis=0)
 
             if x_test_w_cols[scr].isna().all() or x_test_w_cols[scr].max() == 0:
-                logger.warning(f'Benchmark score column {scr} in test set contains all NaNs or has a max value of 0, skipping this column.')
+                logger.warning(f''''Benchmark score column {scr} in test set contains all NaNs'''
+                               + '''or has a max value of 0, skipping this column.''')
                 continue
 
             y_pred = 1 - x_test_w_cols[scr].fillna(0)/x_test_w_cols[scr].fillna(0).max()
@@ -172,7 +184,10 @@ class EnsembleClassifier:
 
         return res
 
-    def build_classifier_estimators(self, processor_lin, processor_nlin, list_of_estimators=None, final_estimator='RandomForest'):
+    def build_classifier_estimators(self,
+                                    processor_lin, processor_nlin,
+                                    list_of_estimators=None,
+                                    final_estimator='RandomForest'):
         ''' build pipelines:
               1. missing data imputation based on data type;
               2. scale data for linear estimator (LogisticRegression)

@@ -24,13 +24,16 @@ class PipelineBuilder:
             num_cols = df_x.columns[df_x.dtypes != 'O']
 
             # OneHotEncoder applied to linear estimator only!
-            categories = [[v if v is not None else missing_cat for v in df_x[column].unique()] for column in df_x[cat_cols]]
+            categories = [[v if v is not None else missing_cat
+                           for v in df_x[column].unique()]
+                          for column in df_x[cat_cols]]
             return num_cols, cat_cols, categories
 
         missing_cat = 'missing'
 
         # make sure to use entire sample to build categories for categorical variables!
-        num_cols, cat_cols, categories = extract_col_types(xx_all.drop(columns=excl_model_cols), missing_cat)
+        num_cols, cat_cols, categories = \
+            extract_col_types(xx_all.drop(columns=excl_model_cols), missing_cat)
 
         # numeric
         num_proc_lin = make_pipeline(
